@@ -737,7 +737,7 @@ class HierarchicalMppIT : KGPBaseTest() {
                 assertTasksExecuted(configCacheIncompatibleTasks)
                 configCacheIncompatibleTasks.forEach { task ->
                     assertOutputContains(
-                        """Task `:$task` of type `.+`: .+(at execution time is unsupported)|(not supported with the configuration cache)"""
+                        """Task `$task` of type `.+`: .+(at execution time is unsupported)|(not supported with the configuration cache)"""
                             .toRegex()
                     )
                 }
