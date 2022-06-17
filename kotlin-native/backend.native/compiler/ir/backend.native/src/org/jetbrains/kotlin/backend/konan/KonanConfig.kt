@@ -73,14 +73,13 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
             MemoryModel.STRICT -> MemoryModel.STRICT
             MemoryModel.RELAXED -> {
                 configuration.report(CompilerMessageSeverity.ERROR,
-                        "Relaxed memory model is deprecated and isn't expected to work right way with current Kotlin version." +
-                                " Use strict as default. ")
+                        "Relaxed MM is deprecated and isn't expected to work right way with current Kotlin version. Using legacy MM.")
                 MemoryModel.STRICT
             }
             MemoryModel.EXPERIMENTAL -> {
                 if (!target.supportsThreads()) {
                     configuration.report(CompilerMessageSeverity.STRONG_WARNING,
-                            "Experimental memory model requires threads, which are not supported on target ${target.name}. Used strict memory model.")
+                            "New MM requires threads, which are not supported on target ${target.name}. Using legacy MM.")
                     MemoryModel.STRICT
                 } else {
                     MemoryModel.EXPERIMENTAL
@@ -90,7 +89,7 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
         }.also {
             if (it == MemoryModel.EXPERIMENTAL && destroyRuntimeMode == DestroyRuntimeMode.LEGACY) {
                 configuration.report(CompilerMessageSeverity.ERROR,
-                        "Experimental memory model is incompatible with 'legacy' destroy runtime mode.")
+                        "New MM is incompatible with 'legacy' destroy runtime mode.")
             }
         }
     }
@@ -127,8 +126,18 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
             memoryModel != MemoryModel.EXPERIMENTAL && freezingMode != Freezing.Full -> {
                 configuration.report(
                         CompilerMessageSeverity.ERROR,
-                        "`freezing` can only be adjusted with experimental MM. Falling back to default behavior.")
+                        "`freezing` can only be adjusted with new MM. Falling back to default behavior.")
                 Freezing.Full
+            }
+            memoryModel == MemoryModel.EXPERIMENTAL && freezingMode != Freezing.Disabled -> {
+                // INFO because deprecation is currently ignorable via OptIn. Using WARNING will require silencing (for warnings-as-errors)
+                // by some compiler flag.
+                // TODO: When moving into proper deprecation cycle replace with WARNING.
+                configuration.report(
+                        CompilerMessageSeverity.INFO,
+                        "`freezing` should not be enabled with the new MM. Freezing API is deprecated since 1.7.20. See https://github.com/JetBrains/kotlin/blob/master/kotlin-native/NEW_MM.md#freezing-deprecation for details"
+                )
+                freezingMode
             }
             else -> freezingMode
         }
@@ -138,11 +147,13 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
                 ?: SourceInfoType.CORESYMBOLICATION.takeIf { debug && target.supportsCoreSymbolication() }
                 ?: SourceInfoType.NOOP
 
+    val defaultGCSchedulerType get() = when {
+        !target.supportsThreads() -> GCSchedulerType.ON_SAFE_POINTS
+        else -> GCSchedulerType.WITH_TIMER
+    }
+
     val gcSchedulerType: GCSchedulerType by lazy {
-        configuration.get(BinaryOptions.gcSchedulerType) ?: when {
-            !target.supportsThreads() -> GCSchedulerType.ON_SAFE_POINTS
-            else -> GCSchedulerType.WITH_TIMER
-        }
+        configuration.get(BinaryOptions.gcSchedulerType) ?: defaultGCSchedulerType
     }
 
     val needVerifyIr: Boolean
@@ -338,11 +349,18 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
         val ignoreCacheReason = when {
             optimizationsEnabled -> "for optimized compilation"
             memoryModel != defaultMemoryModel -> "with ${memoryModel.name.lowercase()} memory model"
-            propertyLazyInitialization != defaultPropertyLazyInitialization -> "with${if (propertyLazyInitialization) "" else "out"} lazy top levels initialization"
+            propertyLazyInitialization != defaultPropertyLazyInitialization -> {
+                "with${if (propertyLazyInitialization) "" else "out"} lazy top levels initialization"
+            }
             useDebugInfoInNativeLibs -> "with native libs debug info"
             allocationMode != defaultAllocationMode -> "with ${allocationMode.name.lowercase()} allocator"
             memoryModel == MemoryModel.EXPERIMENTAL && gc != defaultGC -> "with ${gc.name.lowercase()} garbage collector"
+            memoryModel == MemoryModel.EXPERIMENTAL && gcSchedulerType != defaultGCSchedulerType -> {
+                "with ${gcSchedulerType.name.lowercase()} garbage collector scheduler"
+            }
             freezing != defaultFreezing -> "with ${freezing.name.replaceFirstChar { it.lowercase() }} freezing mode"
+            // TODO: it should be disabled but test infrastructure need to be reworked for that
+            runtimeAssertsMode != RuntimeAssertsMode.IGNORE -> null
             else -> null
         }
         CacheSupport(

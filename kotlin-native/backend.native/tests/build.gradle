@@ -106,6 +106,12 @@ if (project.globalTestArgs.contains("-g")) {
     }
 }
 
+if (!isExperimentalMM) {
+    tasks.withType(KonanCompileNativeBinary.class).configureEach {
+        extraOpts "-opt-in=kotlin.native.FreezingIsDeprecated"
+    }
+}
+
 allprojects {
     // Root directories for test output (logs, compiled files, statistics etc). Only single path must be in each set.
     // backend.native/tests
@@ -1100,7 +1106,7 @@ standaloneTest("worker_threadlocal_no_leak") {
 }
 
 standaloneTest("freeze0") {
-    enabled = (project.testTarget != 'wasm32') // No workers on WASM.
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No workers on WASM.
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze0.kt"
@@ -1108,7 +1114,7 @@ standaloneTest("freeze0") {
 }
 
 standaloneTest("freeze1") {
-    enabled = (project.testTarget != 'wasm32') // No exceptions on WASM.
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No exceptions on WASM.
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze1.kt"
@@ -1116,7 +1122,7 @@ standaloneTest("freeze1") {
 }
 
 standaloneTest("freeze_stress") {
-    enabled = (project.testTarget != 'wasm32') // No exceptions on WASM.
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No exceptions on WASM.
         && !isAggressiveGC // TODO: Investigate why too slow
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
@@ -1125,7 +1131,7 @@ standaloneTest("freeze_stress") {
 }
 
 standaloneTest("freeze2") {
-    enabled = (project.testTarget != 'wasm32') // No exceptions on WASM.
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No exceptions on WASM.
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze2.kt"
@@ -1133,7 +1139,7 @@ standaloneTest("freeze2") {
 }
 
 standaloneTest("freeze3") {
-    enabled = (project.testTarget != 'wasm32') // No exceptions on WASM.
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No exceptions on WASM.
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze3.kt"
@@ -1141,7 +1147,7 @@ standaloneTest("freeze3") {
 }
 
 standaloneTest("freeze4") {
-    enabled = (project.testTarget != 'wasm32') // No exceptions on WASM.
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No exceptions on WASM.
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze4.kt"
@@ -1149,6 +1155,7 @@ standaloneTest("freeze4") {
 }
 
 standaloneTest("freeze5") {
+    enabled = cacheTesting == null
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze5.kt"
@@ -1156,8 +1163,8 @@ standaloneTest("freeze5") {
 }
 
 standaloneTest("freeze6") {
-    enabled = (project.testTarget != 'wasm32') && // No exceptions on WASM.
-        !isNoopGC
+    enabled = (project.testTarget != 'wasm32') && (cacheTesting == null) // No exceptions on WASM.
+        && !isNoopGC
     useGoldenData = true
     flags = ["-Xbinary=freezing=full", "-tr"]
     source = "runtime/workers/freeze6.kt"
@@ -3432,7 +3439,7 @@ standaloneTest("mpp_optional_expectation") {
 }
 
 standaloneTest("freezing_control_basic_full") {
-    enabled = isExperimentalMM
+    enabled = isExperimentalMM && cacheTesting == null
     source = "runtime/freezing_control/basic.kt"
     flags = [
             '-Xbinary=freezing=full',
@@ -3452,7 +3459,7 @@ standaloneTest("freezing_control_basic_disabled") {
 }
 
 standaloneTest("freezing_control_basic_explicitOnly") {
-    enabled = isExperimentalMM
+    enabled = isExperimentalMM && cacheTesting == null
     source = "runtime/freezing_control/basic.kt"
     flags = [
             '-Xbinary=freezing=explicitOnly',

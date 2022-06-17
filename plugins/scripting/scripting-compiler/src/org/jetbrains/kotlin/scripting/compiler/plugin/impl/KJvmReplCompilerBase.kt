@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.backend.jvm.JvmGeneratorExtensionsImpl
 import org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory
 import org.jetbrains.kotlin.backend.jvm.serialization.JvmIdSignatureDescriptor
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
+import org.jetbrains.kotlin.cli.common.checkKotlinPackageUsage
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
 import org.jetbrains.kotlin.cli.common.messages.AnalyzerWithCompilerReport
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -26,6 +27,7 @@ import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.descriptors.ScriptDescriptor
 import org.jetbrains.kotlin.diagnostics.impl.SimpleDiagnosticsCollector
 import org.jetbrains.kotlin.idea.MainFunctionDetector
+import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.backend.jvm.serialization.JvmDescriptorMangler
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
 import org.jetbrains.kotlin.ir.util.SymbolTable
@@ -44,6 +46,7 @@ import kotlin.script.experimental.jvm.defaultJvmScriptingHostConfiguration
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript
 import kotlin.script.experimental.util.LinkedSnippet
 import kotlin.script.experimental.util.LinkedSnippetImpl
+import kotlin.script.experimental.util.PropertiesCollection
 import kotlin.script.experimental.util.add
 
 // NOTE: this implementation, as it is used in the REPL infrastructure, may be created for every snippet and provided with the state
@@ -92,8 +95,13 @@ open class KJvmReplCompilerBase<AnalyzerT : ReplCodeAnalyzerBase>(
                 if (firstFailure != null)
                     return firstFailure
 
+                checkKotlinPackageUsage(context.environment.configuration, sourceFiles, messageCollector)
+
                 if (messageCollector.hasErrors()) return failure(messageCollector)
 
+                // TODO: support case then JvmDependencyFromClassLoader is registered in non-first line
+                // registerPackageFragmentProvidersIfNeeded already tries to avoid duplicated registering, but impact on
+                // executing it on every snippet needs to be evaluated first
                 if (state.history.isEmpty()) {
                     val updatedConfiguration = ScriptDependenciesProvider.getInstance(context.environment.project)
                         ?.getScriptConfiguration(snippetKtFile)?.configuration
@@ -104,14 +112,16 @@ open class KJvmReplCompilerBase<AnalyzerT : ReplCodeAnalyzerBase>(
                     )
                 }
 
-                val snippetNo = state.getNextLineNo()
+                // TODO: ensure that currentLineId passing is only used for single snippet compilation
+                val lineId = configuration[ScriptCompilationConfiguration.repl.currentLineId]
+                    ?: LineId(state.getNextLineNo(), state.currentGeneration, snippet.hashCode())
 
                 val analysisResult =
                     compilationState.analyzerEngine.analyzeReplLineWithImportedScripts(
                         snippetKtFile,
                         sourceFiles.drop(1),
                         snippet,
-                        snippetNo
+                        lineId.no
                     )
                 AnalyzerWithCompilerReport.reportDiagnostics(analysisResult.diagnostics, errorHolder, renderDiagnosticName = false)
 
@@ -147,7 +157,7 @@ open class KJvmReplCompilerBase<AnalyzerT : ReplCodeAnalyzerBase>(
                     return failure(messageCollector, *scriptDiagnostics.toTypedArray())
                 }
 
-                state.history.push(LineId(snippetNo, 0, snippet.hashCode()), scriptDescriptor)
+                state.history.push(lineId, scriptDescriptor)
 
                 val dependenciesProvider = ScriptDependenciesProvider.getInstance(context.environment.project)
                 makeCompiledScript(
@@ -187,6 +197,7 @@ open class KJvmReplCompilerBase<AnalyzerT : ReplCodeAnalyzerBase>(
         return generationState
     }
 
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     private fun generateWithBackendIr(
         compilationState: ReplCompilationState<AnalyzerT>,
         sourceFiles: List<KtFile>,
@@ -364,3 +375,8 @@ class ReplCompilationState<AnalyzerT : ReplCodeAnalyzerBase>(
     val mangler: JvmDescriptorMangler get() = manglerAndSymbolTable.first
     val symbolTable: SymbolTable get() = manglerAndSymbolTable.second
 }
+
+/**
+ * Internal property for transferring line id information when using new repl infrastructure with legacy one
+ */
+val ReplScriptCompilationConfigurationKeys.currentLineId by PropertiesCollection.key<LineId>(isTransient = true)

@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.scripting.compiler.plugin
 
 import org.jetbrains.kotlin.cli.common.CLITool
+import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.scripting.compiler.test.linesSplitTrim
@@ -185,6 +186,85 @@ class ScriptingWithCliCompilerTest {
             """.trimIndent().linesSplitTrim(),
             filteredErr
         )
+    }
+
+    @Test
+    fun testCompileScriptWithRegularKotlin() {
+
+        fun compileVariant(vararg flags: String): Pair<List<String>, ExitCode> {
+            return withTempDir { tmpdir ->
+                val (_, err, exitCode) = captureOutErrRet {
+                    CLITool.doMainNoExit(
+                        K2JVMCompiler(),
+                        arrayOf(
+                            "-d", tmpdir.path,
+                            "-cp", getMainKtsClassPath().joinToString(File.pathSeparator),
+                            *flags,
+                            "$TEST_DATA_DIR/compiler/mixedCompilation/simpleScriptInstance.kt",
+                            "$TEST_DATA_DIR/compiler/mixedCompilation/simpleScript.main.kts"
+                        )
+                    )
+                }
+                err.linesSplitTrim() to exitCode
+            }
+        }
+
+        val scriptInSourceRootWarning =
+            "warning: script 'simpleScript.main.kts' is not supposed to be used along with regular Kotlin sources, and will be ignored in the future versions"
+
+        val unresolvedScriptError =
+            "simpleScriptInstance.kt:3:13: error: unresolved reference: SimpleScript_main"
+
+        compileVariant("-language-version", "1.7").let { (errLines, exitCode) ->
+            Assert.assertTrue(errLines.any { it.startsWith(scriptInSourceRootWarning) })
+            Assert.assertEquals(ExitCode.OK, exitCode)
+        }
+
+        compileVariant("-language-version", "1.7", "-Xallow-any-scripts-in-source-roots").let { (errLines, exitCode) ->
+            Assert.assertTrue(errLines.none { it.startsWith(scriptInSourceRootWarning) })
+            Assert.assertEquals(ExitCode.OK, exitCode)
+        }
+
+        compileVariant("-language-version", "1.9").let { (errLines, exitCode) ->
+            if (errLines.none { it.endsWith(unresolvedScriptError) }) {
+                Assert.fail("Expecting unresolved reference: SimpleScript_main error, got:\n${errLines.joinToString("\n")}")
+            }
+            Assert.assertEquals(ExitCode.COMPILATION_ERROR, exitCode)
+        }
+
+        compileVariant("-language-version", "1.9", "-Xallow-any-scripts-in-source-roots").let { (errLines, exitCode) ->
+            Assert.assertTrue(errLines.none {
+                it.endsWith(unresolvedScriptError) || it.startsWith(scriptInSourceRootWarning)
+            })
+            Assert.assertEquals(ExitCode.OK, exitCode)
+        }
+    }
+
+    @Test
+    fun testScriptMainKtsDiscovery() {
+        withTempDir { tmpdir ->
+
+            fun compileSuccessfullyGetStdErr(fileArg: String): List<String> {
+                val (_, err, ret) = captureOutErrRet {
+                    CLITool.doMainNoExit(
+                        K2JVMCompiler(),
+                        arrayOf(
+                            "-P", "plugin:kotlin.scripting:disable-script-definitions-autoloading=true",
+                            "-cp", getMainKtsClassPath().joinToString(File.pathSeparator), "-d", tmpdir.path, "-verbose", fileArg)
+                    )
+                }
+                Assert.assertEquals(0, ret.code)
+                return err.linesSplitTrim()
+            }
+
+            val loadMainKtsMessage = "logging: configure scripting: loading script definition class org.jetbrains.kotlin.mainKts.MainKtsScript using classpath"
+
+            val res1 = compileSuccessfullyGetStdErr("$TEST_DATA_DIR/compiler/mixedCompilation/nonScript.kt")
+            Assert.assertTrue(res1.none { it.startsWith(loadMainKtsMessage) })
+
+            val res2 = compileSuccessfullyGetStdErr("$TEST_DATA_DIR/compiler/mixedCompilation/simpleScript.main.kts")
+            Assert.assertTrue(res2.any { it.startsWith(loadMainKtsMessage) })
+        }
     }
 
     private fun getMainKtsClassPath(): List<File> {
