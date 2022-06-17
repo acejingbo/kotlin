@@ -29,13 +29,12 @@ class Derived : Base, BaseI {
   }
 
   override fun foo() {
-    super<Base>.foo()
+    super.foo()
   }
 
   override val bar: String
     override get(): String {
-      return super<Base>.<get-bar>()
+      return super.<get-bar>()
     }
 
 }
-

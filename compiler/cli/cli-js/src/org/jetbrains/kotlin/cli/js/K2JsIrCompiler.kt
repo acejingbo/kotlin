@@ -458,7 +458,11 @@ class K2JsIrCompiler : CLICompiler<K2JSCompilerArguments>() {
 
     private fun File.write(outputs: CompilationOutputs) {
         writeText(outputs.jsCode)
-        outputs.writeSourceMapIfPresent(this)
+        outputs.sourceMap?.let {
+            val mapFile = resolveSibling("$name.map")
+            appendText("\n//# sourceMappingURL=${mapFile.name}")
+            mapFile.writeText(it)
+        }
     }
 
     override fun setupPlatformSpecificArgumentsAndServices(

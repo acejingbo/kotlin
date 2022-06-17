@@ -586,8 +586,7 @@ extern "C" void CheckGlobalsAccessible() {
     // Always accessible
 }
 
-// it would be inlined manually in RemoveRedundantSafepointsPass
-extern "C" RUNTIME_NOTHROW NO_INLINE void Kotlin_mm_safePointFunctionPrologue() {
+extern "C" RUNTIME_NOTHROW CODEGEN_INLINE_POLICY void Kotlin_mm_safePointFunctionPrologue() {
     auto* threadData = mm::ThreadRegistry::Instance().CurrentThreadData();
     AssertThreadState(threadData, ThreadState::kRunnable);
     threadData->gc().SafePointFunctionPrologue();

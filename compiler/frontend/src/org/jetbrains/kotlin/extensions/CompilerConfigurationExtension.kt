@@ -15,6 +15,4 @@ interface CompilerConfigurationExtension {
     )
 
     fun updateConfiguration(configuration: CompilerConfiguration)
-
-    fun updateFileRegistry() {}
 }

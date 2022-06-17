@@ -57,13 +57,8 @@ class BasicJvmReplEvaluator(val scriptEvaluator: ScriptEvaluator = BasicJvmScrip
                 }
                 KJvmEvaluatedSnippet(snippetVal, currentConfiguration, retVal)
             }
-            else -> {
-                val firstError = evalRes.reports.find { it.isError() }
-                KJvmEvaluatedSnippet(
-                    snippetVal, currentConfiguration,
-                    firstError?.exception?.let { ResultValue.Error(it) } ?: ResultValue.NotEvaluated
-                )
-            }
+            else ->
+                KJvmEvaluatedSnippet(snippetVal, currentConfiguration, ResultValue.NotEvaluated)
         }
 
         val newNode = lastEvaluatedSnippet.add(newEvalRes)

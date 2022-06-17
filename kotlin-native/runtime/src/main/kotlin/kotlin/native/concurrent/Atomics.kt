@@ -14,7 +14,6 @@ import kotlin.native.internal.*
  * in frozen subgraphs. So shared frozen objects can have fields of atomic types.
  */
 @Frozen
-@OptIn(FreezingIsDeprecated::class)
 public class AtomicInt(private var value_: Int) {
     /**
      * The value being held by this class.
@@ -82,7 +81,6 @@ public class AtomicInt(private var value_: Int) {
 }
 
 @Frozen
-@OptIn(FreezingIsDeprecated::class)
 public class AtomicLong(private var value_: Long = 0)  {
     /**
      * The value being held by this class.
@@ -158,7 +156,6 @@ public class AtomicLong(private var value_: Long = 0)  {
 }
 
 @Frozen
-@OptIn(FreezingIsDeprecated::class)
 public class AtomicNativePtr(private var value_: NativePtr) {
     /**
      * The value being held by this class.
@@ -221,7 +218,6 @@ private fun debugString(value: Any?): String {
 @FrozenLegacyMM
 @LeakDetectorCandidate
 @NoReorderFields
-@OptIn(FreezingIsDeprecated::class)
 public class AtomicReference<T> {
     private var value_: T
 
@@ -315,7 +311,6 @@ public class AtomicReference<T> {
 @NoReorderFields
 @LeakDetectorCandidate
 @ExportTypeInfo("theFreezableAtomicReferenceTypeInfo")
-@FreezingIsDeprecated
 public class FreezableAtomicReference<T>(private var value_: T) {
     // A spinlock to fix potential ARC race.
     private var lock: Int = 0

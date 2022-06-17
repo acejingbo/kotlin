@@ -1,4 +1,3 @@
-@file:OptIn(FreezingIsDeprecated::class)
 package runtime.workers.worker10
 
 import kotlin.test.*

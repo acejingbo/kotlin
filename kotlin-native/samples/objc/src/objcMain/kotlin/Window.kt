@@ -18,8 +18,14 @@ import kotlin.test.assertNotNull
 
 data class QueryResult(val json: Map<String, *>?, val error: String?)
 
-private val NSData.json: Map<String, *>?
-    get() = NSJSONSerialization.JSONObjectWithData(this, 0, null) as? Map<String, *>
+private fun MutableData.asNSData() = this.withPointerLocked { it, size ->
+    val result = NSMutableData.create(length = size.convert())!!
+    memcpy(result.mutableBytes, it, size.convert())
+    result
+}
+
+private fun MutableData.asJSON(): Map<String, *>? =
+        NSJSONSerialization.JSONObjectWithData(this.asNSData(), 0, null) as? Map<String, *>
 
 fun main() {
     autoreleasepool {
@@ -54,7 +60,7 @@ class Controller : NSObject() {
         // Here we call continuator service to ensure we can access mutable state from continuation.
 
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND.convert(), 0),
-                Continuator.wrap({ println("In queue ${dispatch_get_current_queue()}")}) {
+                Continuator.wrap({ println("In queue ${dispatch_get_current_queue()}")}.freeze()) {
             println("After in queue ${dispatch_get_current_queue()}: $index")
         })
 
@@ -82,10 +88,14 @@ class Controller : NSObject() {
 
     class HttpDelegate: NSObject(), NSURLSessionDataDelegateProtocol {
         private val asyncQueue = NSOperationQueue()
-        private var receivedData: NSData? = null
+        private val receivedData = MutableData()
+
+        init {
+            freeze()
+        }
 
         fun fetchUrl(url: String) {
-            receivedData = null
+            receivedData.reset()
             val session = NSURLSession.sessionWithConfiguration(
                     NSURLSessionConfiguration.defaultSessionConfiguration(),
                     this,
@@ -96,7 +106,7 @@ class Controller : NSObject() {
 
         override fun URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData: NSData) {
             initRuntimeIfNeeded()
-            receivedData = didReceiveData
+            receivedData.append(didReceiveData.bytes, didReceiveData.length.convert())
         }
 
         override fun URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError: NSError?) {
@@ -107,7 +117,7 @@ class Controller : NSObject() {
                 Pair(when {
                     response == null -> QueryResult(null, didCompleteWithError?.localizedDescription)
                     response.statusCode.toInt() != 200 -> QueryResult(null, "${response.statusCode.toInt()})")
-                    else -> QueryResult(receivedData?.json, null)
+                    else -> QueryResult(receivedData.asJSON(), null)
                 }, { result: QueryResult ->
                     appDelegate.contentText.string = result.json?.toString() ?: "Error: ${result.error}"
                     appDelegate.canClick = true

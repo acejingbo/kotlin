@@ -24,53 +24,33 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.isEffectivelyExternal
 import org.jetbrains.kotlin.utils.threadLocal
 
 interface ReferenceSymbolTable {
-    @ObsoleteDescriptorBasedAPI
     fun referenceClass(descriptor: ClassDescriptor): IrClassSymbol
     fun referenceClass(sig: IdSignature, reg: Boolean = true): IrClassSymbol
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceScript(descriptor: ScriptDescriptor): IrScriptSymbol
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceConstructor(descriptor: ClassConstructorDescriptor): IrConstructorSymbol
     fun referenceConstructor(sig: IdSignature, reg: Boolean = true): IrConstructorSymbol
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceEnumEntry(descriptor: ClassDescriptor): IrEnumEntrySymbol
     fun referenceEnumEntry(sig: IdSignature, reg: Boolean = true): IrEnumEntrySymbol
-
-    @ObsoleteDescriptorBasedAPI
     fun referenceField(descriptor: PropertyDescriptor): IrFieldSymbol
     fun referenceField(sig: IdSignature, reg: Boolean = true): IrFieldSymbol
-
-    @ObsoleteDescriptorBasedAPI
     fun referenceProperty(descriptor: PropertyDescriptor): IrPropertySymbol
     fun referenceProperty(sig: IdSignature, reg: Boolean = true): IrPropertySymbol
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceProperty(descriptor: PropertyDescriptor, generate: () -> IrProperty): IrProperty
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceSimpleFunction(descriptor: FunctionDescriptor): IrSimpleFunctionSymbol
     fun referenceSimpleFunction(sig: IdSignature, reg: Boolean = true): IrSimpleFunctionSymbol
-
-    @ObsoleteDescriptorBasedAPI
     fun referenceDeclaredFunction(descriptor: FunctionDescriptor): IrSimpleFunctionSymbol
-
-    @ObsoleteDescriptorBasedAPI
     fun referenceValueParameter(descriptor: ParameterDescriptor): IrValueParameterSymbol
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceTypeParameter(classifier: TypeParameterDescriptor): IrTypeParameterSymbol
     fun referenceTypeParameter(sig: IdSignature, reg: Boolean = true): IrTypeParameterSymbol
-
-    @ObsoleteDescriptorBasedAPI
     fun referenceScopedTypeParameter(classifier: TypeParameterDescriptor): IrTypeParameterSymbol
-
-    @ObsoleteDescriptorBasedAPI
     fun referenceVariable(descriptor: VariableDescriptor): IrVariableSymbol
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceTypeAlias(descriptor: TypeAliasDescriptor): IrTypeAliasSymbol
     fun referenceTypeAlias(sig: IdSignature, reg: Boolean = true): IrTypeAliasSymbol
 
@@ -393,11 +373,9 @@ open class SymbolTable(
         listOf(valueParameterSymbolTable, variableSymbolTable, scopedTypeParameterSymbolTable, localDelegatedPropertySymbolTable)
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceExternalPackageFragment(descriptor: PackageFragmentDescriptor) =
         externalPackageFragmentTable.referenced(descriptor) { IrExternalPackageFragmentSymbolImpl(descriptor) }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareExternalPackageFragment(descriptor: PackageFragmentDescriptor): IrExternalPackageFragment {
         return externalPackageFragmentTable.declare(
             descriptor,
@@ -406,7 +384,6 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareExternalPackageFragmentIfNotExists(descriptor: PackageFragmentDescriptor): IrExternalPackageFragment {
         return externalPackageFragmentTable.declareIfNotExists(
             descriptor,
@@ -415,7 +392,6 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareAnonymousInitializer(
         startOffset: Int,
         endOffset: Int,
@@ -429,7 +405,6 @@ open class SymbolTable(
 
     fun listExistedScripts() = scriptSymbolTable.descriptorToSymbol.map { it.value }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareScript(
         descriptor: ScriptDescriptor,
         scriptFactory: (IrScriptSymbol) -> IrScript = { symbol: IrScriptSymbol ->
@@ -455,14 +430,12 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceScript(descriptor: ScriptDescriptor): IrScriptSymbol =
         scriptSymbolTable.referenced(descriptor) { IrScriptSymbolImpl(descriptor) }
 
     private fun createClassSymbol(descriptor: ClassDescriptor, signature: IdSignature?): IrClassSymbol =
         signature?.let { IrClassPublicSymbolImpl(it, descriptor) } ?: IrClassSymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareClass(
         descriptor: ClassDescriptor,
         classFactory: (IrClassSymbol) -> IrClass
@@ -490,11 +463,9 @@ open class SymbolTable(
         classSymbolTable.set(sig, symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareClassIfNotExists(descriptor: ClassDescriptor, classFactory: (IrClassSymbol) -> IrClass): IrClass =
         classSymbolTable.declareIfNotExists(descriptor, { signature -> createClassSymbol(descriptor, signature) }, classFactory)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareClassFromLinker(descriptor: ClassDescriptor, sig: IdSignature, factory: (IrClassSymbol) -> IrClass): IrClass {
         return classSymbolTable.run {
             if (sig.isPubliclyVisible) {
@@ -505,7 +476,6 @@ open class SymbolTable(
         }
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceClass(descriptor: ClassDescriptor): IrClassSymbol =
         @Suppress("Reformat")
         // This is needed for cases like kt46069.kt, where psi2ir creates descriptor-less IR elements for adapted function references.
@@ -542,7 +512,6 @@ open class SymbolTable(
     private fun createConstructorSymbol(descriptor: ClassConstructorDescriptor, signature: IdSignature?): IrConstructorSymbol =
         signature?.let { IrConstructorPublicSymbolImpl(it, descriptor) } ?: IrConstructorSymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareConstructor(
         descriptor: ClassConstructorDescriptor,
         constructorFactory: (IrConstructorSymbol) -> IrConstructor
@@ -565,7 +534,6 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareConstructorIfNotExists(
         descriptor: ClassConstructorDescriptor,
         constructorFactory: (IrConstructorSymbol) -> IrConstructor,
@@ -580,14 +548,12 @@ open class SymbolTable(
         constructorSymbolTable.set(sig, symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceConstructor(descriptor: ClassConstructorDescriptor): IrConstructorSymbol =
         constructorSymbolTable.referenced(descriptor) { signature -> createConstructorSymbol(descriptor, signature) }
 
     fun referenceConstructorIfAny(sig: IdSignature): IrConstructorSymbol? =
         constructorSymbolTable.get(sig)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareConstructorFromLinker(
         descriptor: ClassConstructorDescriptor,
         sig: IdSignature,
@@ -613,7 +579,6 @@ open class SymbolTable(
     private fun createEnumEntrySymbol(descriptor: ClassDescriptor, signature: IdSignature?): IrEnumEntrySymbol =
         signature?.let { IrEnumEntryPublicSymbolImpl(it, descriptor) } ?: IrEnumEntrySymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareEnumEntry(
         startOffset: Int, endOffset: Int, origin: IrDeclarationOrigin, descriptor: ClassDescriptor,
         factory: (IrEnumEntrySymbol) -> IrEnumEntry = {
@@ -632,11 +597,9 @@ open class SymbolTable(
         enumEntryFactory: (IrEnumEntrySymbol) -> IrEnumEntry
     ): IrEnumEntry = enumEntrySymbolTable.declare(sig, symbolFactory, enumEntryFactory)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareEnumEntryIfNotExists(descriptor: ClassDescriptor, factory: (IrEnumEntrySymbol) -> IrEnumEntry): IrEnumEntry =
         enumEntrySymbolTable.declareIfNotExists(descriptor, { signature -> createEnumEntrySymbol(descriptor, signature) }, factory)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareEnumEntryFromLinker(
         descriptor: ClassDescriptor,
         sig: IdSignature,
@@ -651,7 +614,6 @@ open class SymbolTable(
         }
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceEnumEntry(descriptor: ClassDescriptor): IrEnumEntrySymbol =
         enumEntrySymbolTable.referenced(descriptor) { signature -> createEnumEntrySymbol(descriptor, signature) }
 
@@ -690,7 +652,6 @@ open class SymbolTable(
             fieldFactory
         )
 
-    @ObsoleteDescriptorBasedAPI
     fun declareField(
         startOffset: Int,
         endOffset: Int,
@@ -715,7 +676,6 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareFieldFromLinker(descriptor: PropertyDescriptor, sig: IdSignature, factory: (IrFieldSymbol) -> IrField): IrField {
         return fieldSymbolTable.run {
             require(sig.isLocal || sig.isPubliclyVisible)
@@ -727,7 +687,6 @@ open class SymbolTable(
         fieldSymbolTable.set(sig, symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceField(descriptor: PropertyDescriptor): IrFieldSymbol =
         fieldSymbolTable.referenced(descriptor) { signature -> createFieldSymbol(descriptor, signature) }
 
@@ -743,7 +702,6 @@ open class SymbolTable(
     @Deprecated(message = "Use declareProperty/referenceProperty", level = DeprecationLevel.WARNING)
     val propertyTable = HashMap<PropertyDescriptor, IrProperty>()
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceProperty(descriptor: PropertyDescriptor, generate: () -> IrProperty): IrProperty =
         @Suppress("DEPRECATION")
         propertyTable.getOrPut(descriptor, generate)
@@ -751,7 +709,7 @@ open class SymbolTable(
     private fun createPropertySymbol(descriptor: PropertyDescriptor, signature: IdSignature?): IrPropertySymbol =
         signature?.let { IrPropertyPublicSymbolImpl(it, descriptor) } ?: IrPropertySymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     fun declareProperty(
         startOffset: Int,
         endOffset: Int,
@@ -793,11 +751,9 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declarePropertyIfNotExists(descriptor: PropertyDescriptor, propertyFactory: (IrPropertySymbol) -> IrProperty): IrProperty =
         propertySymbolTable.declareIfNotExists(descriptor, { signature -> createPropertySymbol(descriptor, signature) }, propertyFactory)
 
-    @ObsoleteDescriptorBasedAPI
     fun declarePropertyFromLinker(descriptor: PropertyDescriptor, sig: IdSignature, factory: (IrPropertySymbol) -> IrProperty): IrProperty {
         return propertySymbolTable.run {
             if (sig.isPubliclyVisible) {
@@ -812,7 +768,6 @@ open class SymbolTable(
         propertySymbolTable.set(sig, symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceProperty(descriptor: PropertyDescriptor): IrPropertySymbol =
         propertySymbolTable.referenced(descriptor) { signature -> createPropertySymbol(descriptor, signature) }
 
@@ -830,7 +785,6 @@ open class SymbolTable(
     private fun createTypeAliasSymbol(descriptor: TypeAliasDescriptor, signature: IdSignature?): IrTypeAliasSymbol =
         signature?.let { IrTypeAliasPublicSymbolImpl(it, descriptor) } ?: IrTypeAliasSymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceTypeAlias(descriptor: TypeAliasDescriptor): IrTypeAliasSymbol =
         typeAliasSymbolTable.referenced(descriptor) { signature -> createTypeAliasSymbol(descriptor, signature) }
 
@@ -840,7 +794,6 @@ open class SymbolTable(
             else IrTypeAliasSymbolImpl()
         }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareTypeAlias(descriptor: TypeAliasDescriptor, factory: (IrTypeAliasSymbol) -> IrTypeAlias): IrTypeAlias =
         typeAliasSymbolTable.declare(descriptor, { signature -> createTypeAliasSymbol(descriptor, signature) }, factory)
 
@@ -852,7 +805,6 @@ open class SymbolTable(
         return typeAliasSymbolTable.declare(sig, symbolFactory, factory)
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareTypeAliasIfNotExists(descriptor: TypeAliasDescriptor, factory: (IrTypeAliasSymbol) -> IrTypeAlias): IrTypeAlias =
         typeAliasSymbolTable.declareIfNotExists(descriptor, { signature -> createTypeAliasSymbol(descriptor, signature) }, factory)
 
@@ -861,7 +813,6 @@ open class SymbolTable(
     private fun createSimpleFunctionSymbol(descriptor: FunctionDescriptor, signature: IdSignature?): IrSimpleFunctionSymbol =
         signature?.let { IrSimpleFunctionPublicSymbolImpl(it, descriptor) } ?: IrSimpleFunctionSymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
     fun declareSimpleFunction(
         descriptor: FunctionDescriptor,
         functionFactory: (IrSimpleFunctionSymbol) -> IrSimpleFunction
@@ -885,7 +836,6 @@ open class SymbolTable(
         )
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareSimpleFunctionIfNotExists(
         descriptor: FunctionDescriptor,
         functionFactory: (IrSimpleFunctionSymbol) -> IrSimpleFunction
@@ -894,7 +844,6 @@ open class SymbolTable(
             descriptor, { signature -> createSimpleFunctionSymbol(descriptor, signature) }, functionFactory
         )
 
-    @ObsoleteDescriptorBasedAPI
     fun declareSimpleFunctionFromLinker(
         descriptor: FunctionDescriptor?,
         sig: IdSignature,
@@ -913,7 +862,6 @@ open class SymbolTable(
         simpleFunctionSymbolTable.set(sig, symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceSimpleFunction(descriptor: FunctionDescriptor): IrSimpleFunctionSymbol =
         simpleFunctionSymbolTable.referenced(descriptor) { signature -> createSimpleFunctionSymbol(descriptor, signature) }
 
@@ -929,7 +877,6 @@ open class SymbolTable(
         }
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceDeclaredFunction(descriptor: FunctionDescriptor) =
         simpleFunctionSymbolTable.referenced(descriptor) { throw AssertionError("Function is not declared: $descriptor") }
 
@@ -938,7 +885,7 @@ open class SymbolTable(
     private fun createTypeParameterSymbol(descriptor: TypeParameterDescriptor, signature: IdSignature?): IrTypeParameterSymbol =
         signature?.let { IrTypeParameterPublicSymbolImpl(it, descriptor) } ?: IrTypeParameterSymbolImpl(descriptor)
 
-    @ObsoleteDescriptorBasedAPI
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     fun declareGlobalTypeParameter(
         startOffset: Int,
         endOffset: Int,
@@ -965,7 +912,7 @@ open class SymbolTable(
         return globalTypeParameterSymbolTable.declare(sig, symbolFactory, typeParameterFactory)
     }
 
-    @ObsoleteDescriptorBasedAPI
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     fun declareScopedTypeParameter(
         startOffset: Int,
         endOffset: Int,
@@ -993,7 +940,6 @@ open class SymbolTable(
         return typeParameterFactory(symbolFactory(sig))
     }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareScopedTypeParameterFromLinker(
         descriptor: TypeParameterDescriptor,
         sig: IdSignature,
@@ -1010,7 +956,7 @@ open class SymbolTable(
 
     val unboundTypeParameters: Set<IrTypeParameterSymbol> get() = globalTypeParameterSymbolTable.unboundSymbols
 
-    @ObsoleteDescriptorBasedAPI
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     fun declareValueParameter(
         startOffset: Int,
         endOffset: Int,
@@ -1040,18 +986,15 @@ open class SymbolTable(
         valueParameterSymbolTable.introduceLocal(irValueParameter.descriptor, irValueParameter.symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceValueParameter(descriptor: ParameterDescriptor) =
         valueParameterSymbolTable.referenced(descriptor) {
             throw AssertionError("Undefined parameter referenced: $descriptor\n${valueParameterSymbolTable.dump()}")
         }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceTypeParameter(classifier: TypeParameterDescriptor): IrTypeParameterSymbol =
         scopedTypeParameterSymbolTable.get(classifier, signaturer.composeSignature(classifier))
             ?: globalTypeParameterSymbolTable.referenced(classifier) { signature -> createTypeParameterSymbol(classifier, signature) }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceScopedTypeParameter(classifier: TypeParameterDescriptor): IrTypeParameterSymbol =
         scopedTypeParameterSymbolTable.referenced(classifier) { signature -> createTypeParameterSymbol(classifier, signature) }
 
@@ -1060,7 +1003,6 @@ open class SymbolTable(
             if (sig.isPubliclyVisible) IrTypeParameterPublicSymbolImpl(sig) else IrTypeParameterSymbolImpl()
         }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareVariable(
         startOffset: Int,
         endOffset: Int,
@@ -1080,7 +1022,6 @@ open class SymbolTable(
             variableFactory
         )
 
-    @ObsoleteDescriptorBasedAPI
     fun declareVariable(
         startOffset: Int,
         endOffset: Int,
@@ -1093,11 +1034,9 @@ open class SymbolTable(
             initializer = irInitializerExpression
         }
 
-    @ObsoleteDescriptorBasedAPI
     override fun referenceVariable(descriptor: VariableDescriptor) =
         variableSymbolTable.referenced(descriptor) { throw AssertionError("Undefined variable referenced: $descriptor") }
 
-    @ObsoleteDescriptorBasedAPI
     fun declareLocalDelegatedProperty(
         startOffset: Int,
         endOffset: Int,
@@ -1118,7 +1057,6 @@ open class SymbolTable(
             metadata = DescriptorMetadataSource.LocalDelegatedProperty(descriptor)
         }
 
-    @ObsoleteDescriptorBasedAPI
     fun referenceLocalDelegatedProperty(descriptor: VariableDescriptorWithAccessors) =
         localDelegatedPropertySymbolTable.referenced(descriptor) {
             throw AssertionError("Undefined local delegated property referenced: $descriptor")
@@ -1140,7 +1078,6 @@ open class SymbolTable(
         leaveScope(owner.symbol)
     }
 
-    @ObsoleteDescriptorBasedAPI
     open fun referenceValue(value: ValueDescriptor): IrValueSymbol =
         when (value) {
             is ParameterDescriptor ->
@@ -1185,6 +1122,7 @@ inline fun <T> SymbolTable.withScope(owner: IrDeclaration, block: SymbolTable.()
     return result
 }
 
+@ObsoleteDescriptorBasedAPI
 inline fun <T> ReferenceSymbolTable.withReferenceScope(owner: IrSymbol, block: ReferenceSymbolTable.() -> T): T {
     enterScope(owner)
     val result = block()
@@ -1213,6 +1151,7 @@ val SymbolTable.allUnbound: Set<IrSymbol>
         return r.filter { !it.isBound }.toSet()
     }
 
+@OptIn(ObsoleteDescriptorBasedAPI::class)
 fun SymbolTable.noUnboundLeft(message: String) {
     val unbound = this.allUnbound
     assert(unbound.isEmpty()) {

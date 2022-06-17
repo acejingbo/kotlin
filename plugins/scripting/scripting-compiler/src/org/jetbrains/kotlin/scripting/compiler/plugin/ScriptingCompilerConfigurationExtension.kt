@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.scripting.compiler.plugin.impl.reporter
 import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
 import org.jetbrains.kotlin.scripting.definitions.*
 import java.io.File
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.script.experimental.host.ScriptingHostConfiguration
 
 class ScriptingCompilerConfigurationExtension(
@@ -68,41 +67,31 @@ class ScriptingCompilerConfigurationExtension(
                 )
             }
 
-            val definitionsFromClasspath =
-                if (configuration.getBoolean(ScriptingConfigurationKeys.DISABLE_SCRIPT_DEFINITIONS_FROM_CLASSPATH_OPTION)) null
-                else
+            configuration.addAll(
+                ScriptingConfigurationKeys.SCRIPT_DEFINITIONS_SOURCES,
+                listOf(
                     ScriptDefinitionsFromClasspathDiscoverySource(
                         configuration.jvmClasspathRoots,
                         hostConfiguration,
                         messageCollector.reporter
-                    )
-            val autoloadedScriptDefinitions =
-                if (configuration.getBoolean(ScriptingConfigurationKeys.DISABLE_SCRIPT_DEFINITIONS_AUTOLOADING_OPTION)) null
-                else AutoloadedScriptDefinitions(hostConfiguration, this::class.java.classLoader, messageCollector.reporter)
-
-            configuration.addAll(
-                ScriptingConfigurationKeys.SCRIPT_DEFINITIONS_SOURCES,
-                listOfNotNull(definitionsFromClasspath, autoloadedScriptDefinitions)
+                    ),
+                    AutoloadedScriptDefinitions(hostConfiguration, this::class.java.classLoader, messageCollector.reporter)
+                )
             )
 
             val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
             if (scriptDefinitionProvider != null) {
                 scriptDefinitionProvider.setScriptDefinitionsSources(configuration.getList(ScriptingConfigurationKeys.SCRIPT_DEFINITIONS_SOURCES))
                 scriptDefinitionProvider.setScriptDefinitions(configuration.getList(ScriptingConfigurationKeys.SCRIPT_DEFINITIONS))
-            }
-        }
-    }
 
-    override fun updateFileRegistry() {
-        val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
-        if (scriptDefinitionProvider != null) {
-            // Register new file extensions
-            val fileTypeRegistry = FileTypeRegistry.getInstance() as CoreFileTypeRegistry
+                // Register new file extensions
+                val fileTypeRegistry = FileTypeRegistry.getInstance() as CoreFileTypeRegistry
 
-            scriptDefinitionProvider.getKnownFilenameExtensions().filter {
-                fileTypeRegistry.getFileTypeByExtension(it) != KotlinFileType.INSTANCE
-            }.forEach {
-                fileTypeRegistry.registerFileType(KotlinFileType.INSTANCE, it)
+                scriptDefinitionProvider.getKnownFilenameExtensions().filter {
+                    fileTypeRegistry.getFileTypeByExtension(it) != KotlinFileType.INSTANCE
+                }.forEach {
+                    fileTypeRegistry.registerFileType(KotlinFileType.INSTANCE, it)
+                }
             }
         }
     }

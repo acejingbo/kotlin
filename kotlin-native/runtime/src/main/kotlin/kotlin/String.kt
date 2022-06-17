@@ -10,7 +10,6 @@ import kotlin.native.internal.Frozen
 import kotlin.native.internal.GCUnsafeCall
 
 @ExportTypeInfo("theStringTypeInfo")
-@OptIn(FreezingIsDeprecated::class)
 @Frozen
 public final class String : Comparable<String>, CharSequence {
     public companion object {

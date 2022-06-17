@@ -9,7 +9,6 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/ObjCARC.h>
-#include <llvm/Transforms/Utils/Cloning.h>
 
 using namespace llvm;
 
@@ -47,9 +46,4 @@ void LLVMKotlinInitializeTargets() {
 
 void LLVMSetNoTailCall(LLVMValueRef Call) {
     unwrap<CallInst>(Call)->setTailCallKind(CallInst::TCK_NoTail);
-}
-
-int LLVMInlineCall(LLVMValueRef call) {
-  InlineFunctionInfo IFI;
-  return InlineFunction(*unwrap<CallBase>(call), IFI).isSuccess();
 }

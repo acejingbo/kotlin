@@ -245,7 +245,9 @@ class LauncherScriptTest : TestCaseWithTmpdir() {
         runProcess(
             "kotlin", "-no-stdlib", "-e", "println(42)",
             expectedExitCode = 1,
-            expectedStderr = """script.kts:1:1: error: unresolved reference: println
+            expectedStderr = """error: unresolved reference: println (script.kts:1:1)
+error: no script runtime was found in the classpath: class 'kotlin.script.templates.standard.ScriptTemplateWithArgs' not found. Please add kotlin-script-runtime.jar to the module dependencies. (script.kts:1:1)
+script.kts:1:1: error: unresolved reference: println
 println(42)
 ^
 script.kts:1:1: error: no script runtime was found in the classpath: class 'kotlin.script.templates.standard.ScriptTemplateWithArgs' not found. Please add kotlin-script-runtime.jar to the module dependencies.
@@ -297,8 +299,9 @@ println(42)
             expectedStderr = "error: unrecognized script type: noInline.myscript; Specify path to the script file as the first argument\n"
         )
         runProcess(
-            "kotlin", "-Xallow-any-scripts-in-source-roots", "-howtorun", ".kts", "$testDataDirectory/noInline.myscript",
-            expectedExitCode = 1, expectedStderr = """compiler/testData/launcher/noInline.myscript:1:7: error: unresolved reference: CompilerOptions
+            "kotlin", "-howtorun", ".kts", "$testDataDirectory/noInline.myscript",
+            expectedExitCode = 1, expectedStderr = """error: unresolved reference: CompilerOptions (noInline.myscript:1:7)
+compiler/testData/launcher/noInline.myscript:1:7: error: unresolved reference: CompilerOptions
 @file:CompilerOptions("-Xno-inline")
       ^
 """

@@ -1,5 +1,3 @@
-@file:OptIn(FreezingIsDeprecated::class)
-
 package runtime.workers.worker_exceptions_legacy
 
 import kotlin.test.*

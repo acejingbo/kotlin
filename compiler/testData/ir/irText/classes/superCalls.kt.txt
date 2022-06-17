@@ -13,7 +13,7 @@ open class Base {
     open get
 
   override fun hashCode(): Int {
-    return super<Any>.hashCode()
+    return super.hashCode()
   }
 
 }
@@ -26,13 +26,12 @@ class Derived : Base {
   }
 
   override fun foo() {
-    super<Base>.foo()
+    super.foo()
   }
 
   override val bar: String
     override get(): String {
-      return super<Base>.<get-bar>()
+      return super.<get-bar>()
     }
 
 }
-

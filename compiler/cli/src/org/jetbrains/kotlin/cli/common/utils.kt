@@ -42,10 +42,11 @@ fun incrementalCompilationIsEnabledForJs(arguments: CommonCompilerArguments): Bo
     return arguments.incrementalCompilation ?: IncrementalCompilation.isEnabledForJs()
 }
 
-fun checkKotlinPackageUsage(configuration: CompilerConfiguration, files: Collection<KtFile>, messageCollector: MessageCollector): Boolean {
+fun checkKotlinPackageUsage(configuration: CompilerConfiguration, files: Collection<KtFile>): Boolean {
     if (configuration.getBoolean(CLIConfigurationKeys.ALLOW_KOTLIN_PACKAGE)) {
         return true
     }
+    val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
     val kotlinPackage = FqName("kotlin")
     for (file in files) {
         if (file.packageFqName.isSubpackageOf(kotlinPackage)) {
@@ -59,9 +60,6 @@ fun checkKotlinPackageUsage(configuration: CompilerConfiguration, files: Collect
     }
     return true
 }
-
-fun checkKotlinPackageUsage(configuration: CompilerConfiguration, files: Collection<KtFile>): Boolean =
-    checkKotlinPackageUsage(configuration, files, configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE))
 
 fun getLibraryFromHome(
     paths: KotlinPaths?,

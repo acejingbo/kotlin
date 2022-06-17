@@ -3,7 +3,6 @@
  * that can be found in the LICENSE file.
  */
 
-@file:OptIn(FreezingIsDeprecated::class)
 package runtime.collections.typed_array1
 
 import kotlin.test.*

@@ -26,7 +26,6 @@ class JvmReplCompilerState<CompilationT : JvmReplCompilerState.Compilation>(
     override val history = JvmReplCompilerStageHistory(this)
 
     override val currentGeneration: Int get() = (history as BasicReplStageHistory<*>).currentGeneration.get()
-    override fun getNextLineNo(): Int = history.currentLineNumber.getAndIncrement()
 
     override fun dispose() {
         lock.write {

@@ -11,5 +11,5 @@ package foo
 
 fun test() {
     val some = Some()
-    val another = Another()
+    val another = <!UNRESOLVED_REFERENCE!>Another<!>()
 }

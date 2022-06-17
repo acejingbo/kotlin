@@ -94,18 +94,10 @@ open class BasicJvmScriptEvaluator : ScriptEvaluator {
 
         val ctor = java.constructors.single()
 
-        @Suppress("UNCHECKED_CAST")
-        val wrapper: ScriptExecutionWrapper<Any>? =
-            refinedEvalConfiguration[ScriptEvaluationConfiguration.scriptExecutionWrapper] as ScriptExecutionWrapper<Any>?
-
         val saveClassLoader = Thread.currentThread().contextClassLoader
         Thread.currentThread().contextClassLoader = this.java.classLoader
         return try {
-            if (wrapper == null) {
-                ctor.newInstance(*args.toArray())
-            } else wrapper.invoke {
-                ctor.newInstance(*args.toArray())
-            }
+            ctor.newInstance(*args.toArray())
         } finally {
             Thread.currentThread().contextClassLoader = saveClassLoader
         }

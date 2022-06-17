@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.scripting.compiler.plugin.impl
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
-import org.jetbrains.kotlin.cli.common.checkKotlinPackageUsage
 import org.jetbrains.kotlin.cli.common.fir.FirDiagnosticsCompilerResultsReporter
 import org.jetbrains.kotlin.cli.common.messages.AnalyzerWithCompilerReport
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -62,8 +61,9 @@ class ScriptJvmCompilerFromEnvironment(val environment: KotlinCoreEnvironment) :
     override fun compile(
         script: SourceCode,
         scriptCompilationConfiguration: ScriptCompilationConfiguration
-    ): ResultWithDiagnostics<CompiledScript> =
-        withMessageCollector(script = script) { messageCollector ->
+    ): ResultWithDiagnostics<CompiledScript> {
+        val parentMessageCollector = environment.configuration[CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY]
+        return withMessageCollector(script = script, parentMessageCollector = parentMessageCollector) { messageCollector ->
             withScriptCompilationCache(script, scriptCompilationConfiguration, messageCollector) {
 
                 val initialConfiguration = scriptCompilationConfiguration.refineBeforeParsing(script).valueOr {
@@ -72,17 +72,17 @@ class ScriptJvmCompilerFromEnvironment(val environment: KotlinCoreEnvironment) :
 
                 val context = createCompilationContextFromEnvironment(initialConfiguration, environment, messageCollector)
 
-                val previousMessageCollector = environment.configuration[CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY]
                 try {
                     environment.configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, messageCollector)
 
                     compileImpl(script, context, initialConfiguration, messageCollector)
                 } finally {
-                    if (previousMessageCollector != null)
-                        environment.configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, previousMessageCollector)
+                    if (parentMessageCollector != null)
+                        environment.configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, parentMessageCollector)
                 }
             }
         }
+    }
 }
 
 private fun withScriptCompilationCache(
@@ -127,8 +127,6 @@ private fun compileImpl(
         messageCollector
     )
 
-    checkKotlinPackageUsage(context.environment.configuration, sourceFiles, messageCollector)
-
     if (messageCollector.hasErrors() || sourceDependencies.any { it.sourceDependencies is ResultWithDiagnostics.Failure }) {
         return failure(messageCollector)
     }
@@ -161,17 +159,9 @@ internal fun registerPackageFragmentProvidersIfNeeded(
     scriptCompilationConfiguration: ScriptCompilationConfiguration,
     environment: KotlinCoreEnvironment
 ) {
-    val scriptDependencies = scriptCompilationConfiguration[ScriptCompilationConfiguration.dependencies] ?: return
-    val scriptDependenciesFromClassLoader = scriptDependencies.filterIsInstance<JvmDependencyFromClassLoader>().takeIf { it.isNotEmpty() }
-        ?: return
-    // TODO: consider implementing deduplication/diff processing
-    val alreadyRegistered =
-        environment.project.extensionArea.getExtensionPoint(PackageFragmentProviderExtension.extensionPointName).extensions.any {
-            (it is PackageFragmentFromClassLoaderProviderExtension) &&
-                    it.scriptCompilationConfiguration[ScriptCompilationConfiguration.dependencies] == scriptDependencies
-        }
-    if (!alreadyRegistered) {
-        scriptDependenciesFromClassLoader.forEach { dependency ->
+    scriptCompilationConfiguration[ScriptCompilationConfiguration.dependencies]?.forEach { dependency ->
+        if (dependency is JvmDependencyFromClassLoader) {
+            // TODO: consider implementing deduplication
             PackageFragmentProviderExtension.registerExtension(
                 environment.project,
                 PackageFragmentFromClassLoaderProviderExtension(

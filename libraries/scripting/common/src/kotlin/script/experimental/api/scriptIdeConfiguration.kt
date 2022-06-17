@@ -20,8 +20,8 @@ enum class ScriptAcceptedLocation {
     Sources,     // Under sources roots
     Tests,       // Under test sources roots
     Libraries,   // Under libraries classes or sources
-    Project,     // Project infrastructure: project files excluding source roots
-    Everywhere;  // All places in the project
+    Project,     // Under project folder, including sources and test sources roots
+    Everywhere;
 }
 
 val ScriptCompilationConfigurationKeys.ide
@@ -30,4 +30,9 @@ val ScriptCompilationConfigurationKeys.ide
 val IdeScriptCompilationConfigurationKeys.dependenciesSources by PropertiesCollection.key<List<ScriptDependency>>()
 
 val IdeScriptCompilationConfigurationKeys.acceptedLocations
-        by PropertiesCollection.key(listOf(ScriptAcceptedLocation.Everywhere))
+        by PropertiesCollection.key(
+            listOf(
+                ScriptAcceptedLocation.Sources,
+                ScriptAcceptedLocation.Tests
+            )
+        )

@@ -354,7 +354,6 @@ fun IrValueParameter.hasDefaultValue(): Boolean = DFS.ifAny(
     { current -> current.defaultValue != null }
 )
 
-@ObsoleteDescriptorBasedAPI
 fun ReferenceSymbolTable.referenceClassifier(classifier: ClassifierDescriptor): IrClassifierSymbol =
     when (classifier) {
         is TypeParameterDescriptor ->
@@ -367,7 +366,6 @@ fun ReferenceSymbolTable.referenceClassifier(classifier: ClassifierDescriptor): 
             throw IllegalArgumentException("Unexpected classifier descriptor: $classifier")
     }
 
-@ObsoleteDescriptorBasedAPI
 fun ReferenceSymbolTable.referenceFunction(callable: CallableDescriptor): IrFunctionSymbol =
     when (callable) {
         is ClassConstructorDescriptor ->

@@ -153,8 +153,6 @@ KDouble Kotlin_math_round(KDouble x) { return rint(x); }
 
 KDouble Kotlin_math_abs(KDouble x) { return fabs(x); }
 
-KDouble Kotlin_math_cbrt(KDouble x) { return cbrt(x); }
-
 // extensions
 
 KDouble Kotlin_math_Double_pow(KDouble thiz, KDouble x) {
@@ -229,8 +227,6 @@ KFloat Kotlin_math_floorf(KFloat x) { return floorf(x); }
 KFloat Kotlin_math_roundf(KFloat x) { return rintf(x); }
 
 KFloat Kotlin_math_absf(KFloat x) { return fabsf(x); }
-
-KFloat Kotlin_math_cbrtf(KFloat x) { return cbrtf(x); }
 
 // extensions
 
@@ -314,8 +310,6 @@ KDouble Kotlin_math_abs(KDouble x)   { RETURN_RESULT_OF_JS_CALL(knjs__Math_abs, 
 
 KDouble Kotlin_math_atan2(KDouble y, KDouble x) { RETURN_RESULT_OF_JS_CALL2(knjs__Math_atan2, y, x); }
 KDouble Kotlin_math_hypot(KDouble x, KDouble y) { RETURN_RESULT_OF_JS_CALL2(knjs__Math_hypot, x, y); }
-
-KDouble Kotlin_math_cbrt(KDouble x) { RETURN_RESULT_OF_JS_CALL(knjs__Math_cbrt, x); }
 
 // extensions
 
@@ -411,8 +405,6 @@ KFloat Kotlin_math_absf(KFloat x)   { return (KFloat)Kotlin_math_abs   (x); }
 
 KFloat Kotlin_math_atan2f(KFloat y, KFloat x) { return (KFloat)Kotlin_math_atan2(y, x); }
 KFloat Kotlin_math_hypotf(KFloat x, KFloat y) { return (KFloat)Kotlin_math_hypot(x, y); }
-
-KFloat Kotlin_math_cbrtf(KFloat x) { return (KFloat)Kotlin_math_cbrt(x); }
 
 // extensions
 
@@ -512,8 +504,6 @@ KDouble Kotlin_math_round(KDouble x) { NotImplemented(); }
 
 KDouble Kotlin_math_abs(KDouble x) { NotImplemented(); }
 
-KDouble Kotlin_math_cbrt(KDouble x) { NotImplemented(); }
-
 // extensions
 
 KDouble Kotlin_math_Double_pow(KDouble thiz, KDouble x) { NotImplemented(); }
@@ -560,8 +550,6 @@ KFloat Kotlin_math_floorf(KFloat x) { NotImplemented(); }
 KFloat Kotlin_math_roundf(KFloat x) { NotImplemented(); }
 
 KFloat Kotlin_math_absf(KFloat x) { NotImplemented(); }
-
-KFloat Kotlin_math_cbrtf(KFloat x) { NotImplemented(); }
 
 // extensions
 

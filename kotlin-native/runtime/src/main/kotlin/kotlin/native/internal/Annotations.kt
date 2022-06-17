@@ -46,7 +46,6 @@ public annotation class ExportForCompiler
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
-@FreezingIsDeprecated
 internal annotation class Frozen
 
 /**
@@ -54,7 +53,6 @@ internal annotation class Frozen
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
-@FreezingIsDeprecated
 internal annotation class FrozenLegacyMM
 
 /**
@@ -163,7 +161,6 @@ internal annotation class InternalForKotlinNative
  * Marks a class that has a freeze hook.
  */
 @Target(AnnotationTarget.CLASS)
-@FreezingIsDeprecated
 internal annotation class HasFreezeHook
 
 /**

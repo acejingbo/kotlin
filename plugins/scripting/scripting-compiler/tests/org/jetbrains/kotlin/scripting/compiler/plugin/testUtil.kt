@@ -224,10 +224,10 @@ internal fun <T> captureOutErrRet(body: () -> T): Triple<String, String, T> {
     return Triple(outStream.toString().trim(), errStream.toString().trim(), ret)
 }
 
-internal fun <R> withTempDir(keyName: String = "tmp", body: (File) -> R): R {
+internal fun <R> withTempDir(keyName: String = "tmp", body: (File) -> R) {
     val tempDir = Files.createTempDirectory(keyName).toFile()
     try {
-        return body(tempDir)
+        body(tempDir)
     } finally {
         tempDir.deleteRecursively()
     }

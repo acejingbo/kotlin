@@ -1,4 +1,3 @@
-@file:OptIn(FreezingIsDeprecated::class)
 package runtime.workers.mutableData1
 
 import kotlin.native.concurrent.*

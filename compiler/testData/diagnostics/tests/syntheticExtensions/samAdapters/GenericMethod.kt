@@ -1,4 +1,3 @@
-// FIR_IDENTICAL
 // JAVAC_EXPECTED_FILE
 // FILE: KotlinFile.kt
 fun foo(javaClass: JavaClass): String {

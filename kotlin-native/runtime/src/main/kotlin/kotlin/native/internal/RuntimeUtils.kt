@@ -101,7 +101,6 @@ internal fun ThrowCharacterCodingException(): Nothing {
 }
 
 @ExportForCppRuntime
-@FreezingIsDeprecated
 internal fun ThrowIncorrectDereferenceException() {
     throw IncorrectDereferenceException(
             "Trying to access top level value not marked as @ThreadLocal or @SharedImmutable from non-main thread")
@@ -134,7 +133,6 @@ internal fun ReportUnhandledException(throwable: Throwable) {
 // Using object to make sure that `hook` is initialized when it's needed instead of
 // in a normal global initialization flow. This is important if some global happens
 // to throw an exception during it's initialization before this hook would've been initialized.
-@OptIn(FreezingIsDeprecated::class)
 internal object UnhandledExceptionHookHolder {
     internal val hook: FreezableAtomicReference<ReportUnhandledExceptionHook?> =
         if (Platform.memoryModel == MemoryModel.EXPERIMENTAL) {
@@ -147,7 +145,6 @@ internal object UnhandledExceptionHookHolder {
 // TODO: Can be removed only when native-mt coroutines stop using it.
 @PublishedApi
 @ExportForCppRuntime
-@OptIn(FreezingIsDeprecated::class)
 internal fun OnUnhandledException(throwable: Throwable) {
     val handler = UnhandledExceptionHookHolder.hook.value
     if (handler == null) {
@@ -162,7 +159,6 @@ internal fun OnUnhandledException(throwable: Throwable) {
 }
 
 @ExportForCppRuntime("Kotlin_runUnhandledExceptionHook")
-@OptIn(FreezingIsDeprecated::class)
 internal fun runUnhandledExceptionHook(throwable: Throwable) {
     val handler = UnhandledExceptionHookHolder.hook.value ?: throw throwable
     handler(throwable)

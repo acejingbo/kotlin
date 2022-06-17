@@ -23,8 +23,6 @@ void LLVMKotlinInitializeTargets();
 
 void LLVMSetNoTailCall(LLVMValueRef Call);
 
-int LLVMInlineCall(LLVMValueRef call);
-
 # ifdef __cplusplus
 }
 # endif

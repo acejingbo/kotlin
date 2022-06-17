@@ -20,8 +20,6 @@ package kotlin.native.concurrent
 public actual annotation class ThreadLocal
 
 /**
- * Note: with the new MM this annotation has no effect.
- *
  * Marks a top level property with a backing field as immutable.
  * It is possible to share the value of such property between multiple threads, but it becomes deeply frozen,
  * so no changes can be made to its state or the state of objects it refers to.
@@ -29,10 +27,7 @@ public actual annotation class ThreadLocal
  * The annotation has effect only in Kotlin/Native platform.
  *
  * PLEASE NOTE THAT THIS ANNOTATION MAY GO AWAY IN UPCOMING RELEASES.
- *
- * Since 1.7.20 usage of this annotation is deprecated. See https://github.com/JetBrains/kotlin/blob/master/kotlin-native/NEW_MM.md#freezing-deprecation for details.
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
-// Not @FreezingIsDeprecated: Lots of usages, only the doc updated.
 public actual annotation class SharedImmutable

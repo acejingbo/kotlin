@@ -1,5 +1,3 @@
-@file:OptIn(FreezingIsDeprecated::class)
-
 import kotlin.native.concurrent.freeze
 
 // KT-47828

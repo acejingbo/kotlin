@@ -5,7 +5,6 @@
 
 package kotlin.script.experimental.jvm.util
 
-import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import kotlin.script.experimental.api.ResultValue
 
@@ -43,11 +42,3 @@ fun ResultValue.Error.renderError(stream: PrintStream) {
         }
     }
 }
-
-fun ResultValue.Error.renderError(): String =
-    ByteArrayOutputStream().use { os ->
-        val ps = PrintStream(os)
-        renderError(ps)
-        ps.flush()
-        os.toString()
-    }

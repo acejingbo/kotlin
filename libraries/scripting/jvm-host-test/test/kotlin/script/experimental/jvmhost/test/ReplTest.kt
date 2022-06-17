@@ -369,42 +369,6 @@ class ReplTest : TestCase() {
         )
     }
 
-    @Test
-    fun testCompileWithoutEval() {
-        val replCompiler = KJvmReplCompilerBase<ReplCodeAnalyzerBase>()
-        val replEvaluator = BasicJvmReplEvaluator()
-        val compCfg = simpleScriptCompilationConfiguration
-        runBlocking {
-            replCompiler.compile("false".toScriptSource(), compCfg)
-            replCompiler.compile("true".toScriptSource(), compCfg).onSuccess {
-                replEvaluator.eval(it, simpleScriptEvaluationConfiguration)
-            }
-        }
-    }
-
-    @Test
-    fun testKotlinPackage() {
-        val greeting = "Hello from script!"
-        val error = "Only the Kotlin standard library is allowed to use the 'kotlin' package"
-        val script = "package kotlin\n\"$greeting\""
-        checkEvaluateInReplDiags(
-            sequenceOf(script),
-            sequenceOf(
-                makeFailureResult(
-                    error, path = "Line_0.simplescript.kts",
-                    location = SourceCode.Location(SourceCode.Position(1, 1), SourceCode.Position(1, 15))
-                )
-            )
-        )
-        checkEvaluateInRepl(
-            sequenceOf(script),
-            sequenceOf(greeting),
-            simpleScriptCompilationConfiguration.with {
-                compilerOptions("-Xallow-kotlin-package")
-            }
-        )
-    }
-
     companion object {
         private fun positionsEqual(a: SourceCode.Position?, b: SourceCode.Position?): Boolean {
             if (a == null || b == null) {
@@ -492,10 +456,8 @@ class ReplTest : TestCase() {
                             is ResultValue.Unit -> Assert.assertNull("#$index: Expected $expectedVal, got Unit", expectedVal)
                             is ResultValue.Error -> Assert.assertTrue(
                                 "#$index: Expected $expectedVal, got Error: ${actualVal.error}",
-                                        ((expectedVal as? Throwable) ?: (expectedVal as? ResultValue.Error)?.error).let {
-                                            it != null && it.message == actualVal.error.message
-                                                    && it.cause?.message == actualVal.error.cause?.message
-                                        }
+                                expectedVal is Throwable && expectedVal.message == actualVal.error.message
+                                        && expectedVal.cause?.message == actualVal.error.cause?.message
                             )
                             is ResultValue.NotEvaluated -> Assert.assertEquals(
                                 "#$index: Expected $expectedVal, got NotEvaluated",

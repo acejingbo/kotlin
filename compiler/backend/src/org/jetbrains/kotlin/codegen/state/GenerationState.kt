@@ -309,6 +309,7 @@ class GenerationState private constructor(
 
         // and the rest is an output from the codegen
         var resultFieldName: String? = null
+        var resultTypeString: String? = null
         var resultType: KotlinType? = null
     }
 

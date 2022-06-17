@@ -5,7 +5,6 @@
 
 // All classes and methods should be used in tests
 @file:Suppress("UNUSED")
-@file:OptIn(FreezingIsDeprecated::class)
 
 package conversions
 
@@ -857,11 +856,8 @@ class SharedRefs {
         mutableListOf()
     }
 
-    @OptIn(FreezingIsDeprecated::class)
     fun createFrozenRegularObject() = createRegularObject().freeze()
-    @OptIn(FreezingIsDeprecated::class)
     fun createFrozenLambda() = createLambda().freeze()
-    @OptIn(FreezingIsDeprecated::class)
     fun createFrozenCollection() = createCollection().freeze()
 
     fun hasAliveObjects(): Boolean {

@@ -6,7 +6,6 @@
 package org.jetbrains.kotlin.scripting.definitions
 
 import com.intellij.ide.highlighter.JavaClassFileType
-import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.project.Project
@@ -57,7 +56,6 @@ fun findScriptDefinition(project: Project, script: SourceCode): ScriptDefinition
 fun VirtualFile.isNonScript(): Boolean =
     isDirectory ||
             extension == KotlinFileType.EXTENSION ||
-            extension == JavaFileType.INSTANCE.defaultExtension ||
             extension == JavaClassFileType.INSTANCE.defaultExtension ||
             !this.isKotlinFileType()
 

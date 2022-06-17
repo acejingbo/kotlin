@@ -20,8 +20,6 @@ import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.IrMessageLogger
 import org.jetbrains.kotlin.ir.util.ReferenceSymbolTable
 import org.jetbrains.kotlin.ir.util.TypeTranslator
-import org.jetbrains.kotlin.name.CallableId
-import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -45,7 +43,7 @@ open class IrPluginContextImpl constructor(
 
     @OptIn(ObsoleteDescriptorBasedAPI::class)
     override val moduleDescriptor: ModuleDescriptor = module
-
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     override val symbolTable: ReferenceSymbolTable = st
 
     private fun resolveMemberScope(fqName: FqName): MemberScope? {
@@ -97,7 +95,6 @@ open class IrPluginContextImpl constructor(
         return symbols
     }
 
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
     override fun referenceClass(fqName: FqName): IrClassSymbol? {
         assert(!fqName.isRoot)
         return resolveSymbol(fqName.parent()) { scope ->
@@ -108,7 +105,6 @@ open class IrPluginContextImpl constructor(
         }
     }
 
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
     override fun referenceTypeAlias(fqName: FqName): IrTypeAliasSymbol? {
         assert(!fqName.isRoot)
         return resolveSymbol(fqName.parent()) { scope ->
@@ -124,7 +120,6 @@ open class IrPluginContextImpl constructor(
         return classSymbol.owner.declarations.filterIsInstance<IrConstructor>().map { it.symbol }
     }
 
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
     override fun referenceFunctions(fqName: FqName): Collection<IrSimpleFunctionSymbol> {
         assert(!fqName.isRoot)
         return resolveSymbolCollection(fqName.parent()) { scope ->
@@ -133,33 +128,12 @@ open class IrPluginContextImpl constructor(
         }
     }
 
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
     override fun referenceProperties(fqName: FqName): Collection<IrPropertySymbol> {
         assert(!fqName.isRoot)
         return resolveSymbolCollection(fqName.parent()) { scope ->
             val descriptors = scope.getContributedVariables(fqName.shortName(), NoLookupLocation.FROM_BACKEND)
             descriptors.map { st.referenceProperty(it) }
         }
-    }
-
-    override fun referenceClass(classId: ClassId): IrClassSymbol? {
-        return referenceClass(classId.asSingleFqName())
-    }
-
-    override fun referenceTypeAlias(classId: ClassId): IrTypeAliasSymbol? {
-        return referenceTypeAlias(classId.asSingleFqName())
-    }
-
-    override fun referenceConstructors(classId: ClassId): Collection<IrConstructorSymbol> {
-        return referenceConstructors(classId.asSingleFqName())
-    }
-
-    override fun referenceFunctions(callableId: CallableId): Collection<IrSimpleFunctionSymbol> {
-        return referenceFunctions(callableId.asSingleFqName())
-    }
-
-    override fun referenceProperties(callableId: CallableId): Collection<IrPropertySymbol> {
-        return referenceProperties(callableId.asSingleFqName())
     }
 
     override fun referenceTopLevel(

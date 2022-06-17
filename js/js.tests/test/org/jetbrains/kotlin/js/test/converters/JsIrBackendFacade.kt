@@ -326,10 +326,6 @@ class JsIrBackendFacade(
         val wrappedCode = ClassicJsBackendFacade.wrapWithModuleEmulationMarkers(jsCode, moduleId = moduleId, moduleKind = moduleKind)
         outputFile.write(wrappedCode)
 
-        if (moduleKind == ModuleKind.PLAIN) {
-            writeSourceMapIfPresent(outputFile)
-        }
-
         dependencies.forEach { (moduleId, outputs) ->
             val moduleWrappedCode = ClassicJsBackendFacade.wrapWithModuleEmulationMarkers(outputs.jsCode, moduleKind, moduleId)
             outputFile.augmentWithModuleName(moduleId).write(moduleWrappedCode)

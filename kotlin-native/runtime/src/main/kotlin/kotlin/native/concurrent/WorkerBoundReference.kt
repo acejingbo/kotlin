@@ -30,7 +30,6 @@ external private fun describeWorkerBoundReference(ref: NativePtr): String
 @ExportTypeInfo("theWorkerBoundReferenceTypeInfo")
 @HasFinalizer
 @HasFreezeHook
-@FreezingIsDeprecated
 public class WorkerBoundReference<out T : Any>(value: T) {
 
     private var ptr = NativePtr.NULL

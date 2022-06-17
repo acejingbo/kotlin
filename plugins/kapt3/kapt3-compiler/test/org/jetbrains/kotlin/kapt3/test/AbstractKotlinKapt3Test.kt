@@ -37,6 +37,8 @@ import org.jetbrains.kotlin.codegen.ClassBuilderMode
 import org.jetbrains.kotlin.codegen.CodegenTestFiles
 import org.jetbrains.kotlin.codegen.GenerationUtils
 import org.jetbrains.kotlin.codegen.OriginCollectingClassBuilderFactory
+import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.kapt.base.test.JavaKaptContextTest
 import org.jetbrains.kotlin.kapt3.Kapt3ComponentRegistrar.KaptComponentContributor
@@ -165,6 +167,14 @@ abstract class AbstractKotlinKapt3Test : KotlinKapt3TestBase() {
             check(kaptContext, javaFiles, txtFile, wholeFile)
         } finally {
             kaptContext?.close()
+        }
+    }
+
+    override fun updateConfiguration(configuration: CompilerConfiguration) {
+        super.updateConfiguration(configuration)
+
+        if (backend.isIR) {
+            configuration.put(JVMConfigurationKeys.USE_KAPT_WITH_JVM_IR, true)
         }
     }
 
@@ -323,7 +333,15 @@ open class AbstractClassFileToSourceStubConverterTest : AbstractKotlinKapt3Test(
             }
         }
 
-        checkTxtAccordingToBackend(txtFile, actual)
+        val irTxtFile = File(txtFile.parentFile, txtFile.nameWithoutExtension + "_ir.txt")
+        val expectedFile =
+            if (backend.isIR && irTxtFile.exists()) irTxtFile
+            else txtFile
+        KotlinTestUtils.assertEqualsToFile(expectedFile, actual)
+
+        if (backend.isIR && txtFile.exists() && irTxtFile.exists() && txtFile.readText() == irTxtFile.readText()) {
+            fail("JVM and JVM_IR golden files are identical. Remove $irTxtFile.")
+        }
     }
 }
 

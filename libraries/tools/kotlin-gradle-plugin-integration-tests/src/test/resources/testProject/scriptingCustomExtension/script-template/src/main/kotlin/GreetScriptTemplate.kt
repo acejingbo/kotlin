@@ -5,19 +5,11 @@
 
 package org.jetbrains.kotlin.test
 
-import kotlin.script.experimental.annotations.KotlinScript
-import kotlin.script.experimental.api.ScriptCompilationConfiguration
-import kotlin.script.experimental.api.isStandalone
+import kotlin.script.experimental.annotations.*
 
-@KotlinScript(fileExtension = "greet", compilationConfiguration = GreetScriptDefinition::class)
+@KotlinScript(fileExtension = "greet")
 abstract class GreetScriptTemplate {
     fun greet(subject: String) {
         println("Hello, $subject!")
     }
 }
-
-object GreetScriptDefinition : ScriptCompilationConfiguration(
-    {
-        isStandalone(false)
-    }
-)
